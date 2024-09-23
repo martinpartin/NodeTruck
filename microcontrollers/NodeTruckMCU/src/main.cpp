@@ -2,13 +2,15 @@
 #include <WiFiManager.h>
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
-#include "secrets.h"
 
 // MQTT Broker informasjon
+// nøkler, og passord i secrets.h (gitignore)
+#include "secrets.h"
+//const char* mqtt_server = "mqttbroker";
+//const char* mqtt_username = "username";
+//const char* mqtt_password = "password";
 const int mqtt_port = 8883;
-const char* mqtt_server = "mqttbroker";
-const char* mqtt_username = "username";
-const char* mqtt_password = "password";
+
 
 WiFiClientSecure espClient;
 PubSubClient client(espClient);
