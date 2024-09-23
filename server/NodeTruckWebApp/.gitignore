@@ -1,0 +1,36 @@
+# Bygg- og utdata mapper
+bin/
+obj/
+out/
+
+# Bygge artefakter
+*.dll
+*.exe
+*.pdb
+
+# Brukerspesifikke filer
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code innstillinger
+.vscode/
+
+# Loggfiler
+*.log
+
+# NuGet-pakker
+*.nupkg
+**/packages/*
+!**/packages/build/
+
+# Secrets og konfigurasjonsfiler
+secrets.h
+
+# Midlertidige filer
+*.tmp
+*.cache
+
+# Publiseringsutdata
+publish/
