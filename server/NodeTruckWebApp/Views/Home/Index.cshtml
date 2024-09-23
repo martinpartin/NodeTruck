@@ -1,0 +1,14 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Car Control</h1>
+    <form asp-action="SendCommand" method="post">
+        <button type="submit" name="command" value="Forwards" class="btn btn-primary m-2">Forwards</button>
+        <button type="submit" name="command" value="Backwards" class="btn btn-secondary m-2">Backwards</button>
+        <button type="submit" name="command" value="TurnLeft" class="btn btn-warning m-2">Turn Left</button>
+        <button type="submit" name="command" value="TurnRight" class="btn btn-info m-2">Turn Right</button>
+        <button type="submit" name="command" value="Stop" class="btn btn-danger m-2">Stop</button>
+    </form>
+</div>

@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "tARusrJVF1DB4JC+SzZUkWTr1ifdXHNW17BOQKDNcQC3xcD/pjXT7KZbObHDHX5ZdZRZzFFCkHdzPHta0xTAHg==",
+  "success": true,
+  "projectFilePath": "/Users/martin/git/NodeTruck/server/NodeTruckWebApp/NodeTruckWebApp.csproj",
+  "expectedPackageFiles": [
+    "/Users/martin/.nuget/packages/mqttnet/4.3.7.1207/mqttnet.4.3.7.1207.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -1,0 +1,5 @@
+is_global = true
+build_property.RootNamespace = NodeTruckWebApp
+build_property.ProjectDir = /Users/martin/git/NodeTruck/server/NodeTruckWebApp/
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
