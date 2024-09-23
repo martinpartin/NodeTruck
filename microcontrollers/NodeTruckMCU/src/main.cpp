@@ -1,20 +1,26 @@
+#ifdef UNIT_TEST
+#include "mock_arduino.h"
+#else
 #include <ESP8266WiFi.h>
 #include <WiFiManager.h>
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
+#endif
 
-// MQTT Broker informasjon
+// Resten av dine inkluderingsfiler
 #include "secrets.h" // Inneholder mqtt_server, mqtt_username, mqtt_password
 const int mqtt_port = 8883;
 
 // Definer GPIO-pinnene for hver operasjon
-const int FORWARD_PIN = D1;     // Endre til riktig pinne
-const int BACKWARD_PIN = D2;    // Endre til riktig pinne
-const int TURNLEFT_PIN = D3;    // Endre til riktig pinne
-const int TURNRIGHT_PIN = D4;   // Endre til riktig pinne
+const int FORWARD_PIN = 1;     // Mock pins
+const int BACKWARD_PIN = 2;
+const int TURNLEFT_PIN = 3;
+const int TURNRIGHT_PIN = 4;
 
+#ifndef UNIT_TEST
 WiFiClientSecure espClient;
 PubSubClient client(espClient);
+#endif
 
 // Variabel for å holde styr på siste kommando
 unsigned long lastCommandTime = 0;
