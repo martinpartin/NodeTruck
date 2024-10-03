@@ -5,6 +5,7 @@
 
 // MQTT Broker informasjon
 #include "secrets.h" // Inneholder mqtt_server, mqtt_username, mqtt_password
+#include "Arduino.h"
 const int mqtt_port = 8883;
 
 // Definer GPIO-pinnene for hver operasjon
@@ -46,36 +47,33 @@ void callback(char* topic, byte* payload, unsigned int length) {
   // Styre GPIO-pinner basert på meldingsinnhold
   if (msgString == "Forwards") {
     Serial.println("Beveger forover");
-    digitalWrite(FORWARD_PIN, HIGH);
+    digitalWrite(FORWARD_PIN, LOW);
     // Sett de andre pinnene til LOW
-    digitalWrite(BACKWARD_PIN, LOW);
-    digitalWrite(TURNLEFT_PIN, LOW);
-    digitalWrite(TURNRIGHT_PIN, LOW);
+    digitalWrite(BACKWARD_PIN, HIGH);
+    digitalWrite(TURNLEFT_PIN, HIGH);
+    digitalWrite(TURNRIGHT_PIN, HIGH);
   } else if (msgString == "Backwards") {
     Serial.println("Beveger bakover");
-    digitalWrite(BACKWARD_PIN, HIGH);
-    digitalWrite(FORWARD_PIN, LOW);
-    digitalWrite(TURNLEFT_PIN, LOW);
-    digitalWrite(TURNRIGHT_PIN, LOW);
+    digitalWrite(BACKWARD_PIN, LOW);
+    digitalWrite(FORWARD_PIN, HIGH);
+    digitalWrite(TURNLEFT_PIN, HIGH);
+    digitalWrite(TURNRIGHT_PIN, HIGH);
   } else if (msgString == "TurnLeft") {
     Serial.println("Svinger til venstre");
-    digitalWrite(TURNLEFT_PIN, HIGH);
-    digitalWrite(FORWARD_PIN, LOW);
-    digitalWrite(BACKWARD_PIN, LOW);
-    digitalWrite(TURNRIGHT_PIN, LOW);
+    digitalWrite(TURNLEFT_PIN, LOW);
+    digitalWrite(FORWARD_PIN, HIGH);
+    digitalWrite(BACKWARD_PIN, HIGH);
+    digitalWrite(TURNRIGHT_PIN, HIGH);
   } else if (msgString == "TurnRight") {
     Serial.println("Svinger til høyre");
-    digitalWrite(TURNRIGHT_PIN, HIGH);
-    digitalWrite(FORWARD_PIN, LOW);
-    digitalWrite(BACKWARD_PIN, LOW);
-    digitalWrite(TURNLEFT_PIN, LOW);
+    digitalWrite(TURNRIGHT_PIN, LOW);
+    digitalWrite(FORWARD_PIN, HIGH);
+    digitalWrite(BACKWARD_PIN, HIGH);
+    digitalWrite(TURNLEFT_PIN, HIGH);
   } else if (msgString == "Stop") {
     Serial.println("Stopper");
     // Sett alle pinner til LOW for å stoppe
-    digitalWrite(FORWARD_PIN, LOW);
-    digitalWrite(BACKWARD_PIN, LOW);
-    digitalWrite(TURNLEFT_PIN, LOW);
-    digitalWrite(TURNRIGHT_PIN, LOW);
+      StopCar();
   } else {
     Serial.println("Ukjent kommando");
   }
@@ -124,17 +122,22 @@ void setup() {
   pinMode(TURNRIGHT_PIN, OUTPUT);
 
   // Sett alle pinner til LOW ved start
-  digitalWrite(FORWARD_PIN, LOW);
-  digitalWrite(BACKWARD_PIN, LOW);
-  digitalWrite(TURNLEFT_PIN, LOW);
-  digitalWrite(TURNRIGHT_PIN, LOW);
+  StopCar();
 
   // Initialiser tidspunktet for siste kommando og heartbeat
   lastCommandTime = millis();
   lastHeartbeatTime = millis();
 }
 
-void loop() {
+void StopCar()
+{
+  digitalWrite(FORWARD_PIN, HIGH);
+  digitalWrite(BACKWARD_PIN, HIGH);
+  digitalWrite(TURNLEFT_PIN, HIGH);
+  digitalWrite(TURNRIGHT_PIN, HIGH);
+}
+void loop()
+{
   if (!client.connected()) {
     reconnect();
   }
@@ -155,10 +158,7 @@ void loop() {
   if (now - lastCommandTime > 1000) {
     // Stopper bilen
     Serial.println("Ingen kommando mottatt på 1 sekund, stopper bilen.");
-    digitalWrite(FORWARD_PIN, LOW);
-    digitalWrite(BACKWARD_PIN, LOW);
-    digitalWrite(TURNLEFT_PIN, LOW);
-    digitalWrite(TURNRIGHT_PIN, LOW);
+    StopCar();
 
     // Oppdaterer lastCommandTime for å unngå gjentatte stoppkommandoer
     lastCommandTime = now;
