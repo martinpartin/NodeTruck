@@ -1,20 +1,31 @@
-#NodeTruck
+# NodeTruck
 
-##NodeTruckMCU:
+NodeTruck is a project aimed at controlling and monitoring a small truck via a microcontroller and a web interface. The project consists of two main parts: the **Microcontroller Unit (MCU)** and a **Web Application**.
 
-Anskaff secrets.h
+## Components
 
-last opp på wemos 
+### NodeTruck MCU:
+- Microcontroller setup using the WeMos board (ESP8266).
+- Store credentials and configuration in `secrets.h`.
+- Requires soldering and connecting the hardware components.
 
-lodd
+### NodeTruck WebApp:
+- Configure secrets using `dotnet user-secrets` with the values from `secrets.h`.
+- Run the web app using `dotnet run`.
+- Aim for stable and crash-free operation.
 
+## Prerequisites
 
-##NodeTruckWebApp:
+- **MCU**: ESP8266 (WeMos) with appropriate sensors and motors.
+- **WebApp**: ASP.NET Core and .NET 5+.
 
-dotnet user-secrets med verdiene fra secrets.h
+## Installation and Setup
 
-dotnet run
+### 1. Microcontroller Setup
+- Upload the `secrets.h` file with necessary credentials.
+- Flash the firmware onto the WeMos board.
 
-prøv å ikke kræsje
-
-
+### 2. Web Application Setup
+- Configure the app using `dotnet user-secrets`.
+  ```bash
+  dotnet user-secrets set "Key" "Value"
