@@ -7,7 +7,7 @@ NodeTruck is a project aimed at controlling and monitoring a small truck via a m
 ### NodeTruck MCU:
 - Microcontroller setup using the WeMos board (ESP8266).
 - Store credentials and configuration in `secrets.h`.
-- Requires soldering and connecting the hardware components.
+- Requires soldering and connecting the hardware components. Follow the [soldering diagram](https://github.com/martinpartin/NodeTruck/blob/6b665cc0c752c294dc6a638f0e604b1d3ef2b887/docs/circuit.drawio.png) for detailed instructions.
 
 ### NodeTruck WebApp:
 - Configure secrets using `dotnet user-secrets` with the values from `secrets.h`.
