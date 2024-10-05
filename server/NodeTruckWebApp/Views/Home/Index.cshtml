@@ -1,14 +1,72 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Control";
 }
 
 <div class="text-center">
     <h1 class="display-4">Car Control</h1>
-    <form asp-action="SendCommand" method="post">
-        <button type="submit" name="command" value="Forwards" class="btn btn-primary m-2">Forwards</button>
-        <button type="submit" name="command" value="Backwards" class="btn btn-secondary m-2">Backwards</button>
-        <button type="submit" name="command" value="TurnLeft" class="btn btn-warning m-2">Turn Left</button>
-        <button type="submit" name="command" value="TurnRight" class="btn btn-info m-2">Turn Right</button>
-        <button type="submit" name="command" value="Stop" class="btn btn-danger m-2">Stop</button>
+    <form id="car-control-form" asp-action="SendCommand" method="post">
+        <div class="d-grid gap-2 d-md-block">
+            <!-- Fremover knapp -->
+            <button id="forward-btn" type="submit" name="command" value="Forwards" class="btn btn-primary m-2 direction-btn">Forwards (W)</button>
+        </div>
+        <div class="d-grid gap-2 d-md-block">
+            <!-- Venstre og høyre knapper -->
+            <button id="left-btn" type="submit" name="command" value="TurnLeft" class="btn btn-warning m-2 direction-btn">Left (A)</button>
+            <button id="backward-btn" type="submit" name="command" value="Backwards" class="btn btn-secondary m-2 direction-btn">Backwards (S)</button>
+            <button id="right-btn" type="submit" name="command" value="TurnRight" class="btn btn-info m-2 direction-btn">Right (D)</button>
+        </div>
     </form>
 </div>
+
+<script>
+    // Map for tastene WASD til kommandoene
+    const keyMap = {
+        'w': 'forward-btn',
+        'a': 'left-btn',
+        's': 'backward-btn',
+        'd': 'right-btn'
+    };
+
+    document.addEventListener('keydown', function (event) {
+        const key = event.key.toLowerCase();
+        if (key in keyMap) {
+            event.preventDefault(); // Forhindre standard handling (som scrolling)
+            const button = document.getElementById(keyMap[key]);
+            button.classList.add('active');  // Legg til "active" klasse når tasten trykkes ned
+            button.click(); // Simuler et knappetrykk
+        }
+    });
+
+    document.addEventListener('keyup', function (event) {
+        const key = event.key.toLowerCase();
+        if (key in keyMap) {
+            const button = document.getElementById(keyMap[key]);
+            button.classList.remove('active');  // Fjern "active" klasse når tasten slippes
+        }
+    });
+</script>
+
+<style>
+    /* CSS for å indikere at en knapp er aktiv */
+    .active {
+        transform: scale(1.1);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Layout for knappene */
+    .direction-btn {
+        width: 150px;
+        height: 50px;
+        font-size: 16px;
+    }
+
+    .d-grid {
+        display: grid;
+        justify-content: center;
+    }
+
+    .d-md-block {
+        display: flex;
+        justify-content: center;
+    }
+</style>
