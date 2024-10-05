@@ -46,18 +46,42 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   // Styre GPIO-pinner basert på meldingsinnhold
   if (msgString == "Forwards") {
-    Serial.println("Beveger forover");
+    Serial.println("Kjører forover");
     digitalWrite(FORWARD_PIN, LOW);
     // Sett de andre pinnene til LOW
     digitalWrite(BACKWARD_PIN, HIGH);
     digitalWrite(TURNLEFT_PIN, HIGH);
     digitalWrite(TURNRIGHT_PIN, HIGH);
   } else if (msgString == "Backwards") {
-    Serial.println("Beveger bakover");
+    Serial.println("Kjører bakover");
     digitalWrite(BACKWARD_PIN, LOW);
     digitalWrite(FORWARD_PIN, HIGH);
     digitalWrite(TURNLEFT_PIN, HIGH);
     digitalWrite(TURNRIGHT_PIN, HIGH);
+  } else if (msgString == "ForwardsLeft") {
+    Serial.println("Kjørerer til venstre");
+    digitalWrite(TURNLEFT_PIN, LOW);
+    digitalWrite(FORWARD_PIN, LOW);
+    digitalWrite(BACKWARD_PIN, HIGH);
+    digitalWrite(TURNRIGHT_PIN, HIGH);
+  } else if (msgString == "ForwardsRight") {
+    Serial.println("Kjørerer til høyre");
+    digitalWrite(TURNRIGHT_PIN, LOW);
+    digitalWrite(FORWARD_PIN, LOW);
+    digitalWrite(BACKWARD_PIN, HIGH);
+    digitalWrite(TURNLEFT_PIN, HIGH); 
+  } else if (msgString == "BackwardsLeft") {
+    Serial.println("Kjørerer til venstre");
+    digitalWrite(TURNLEFT_PIN, LOW);
+    digitalWrite(FORWARD_PIN, HIGH);
+    digitalWrite(BACKWARD_PIN, LOW);
+    digitalWrite(TURNRIGHT_PIN, HIGH);
+  } else if (msgString == "BackwardsRight") {
+    Serial.println("Kjørerer til høyre");
+    digitalWrite(TURNRIGHT_PIN, LOW);
+    digitalWrite(FORWARD_PIN, HIGH);
+    digitalWrite(BACKWARD_PIN, LOW);
+    digitalWrite(TURNLEFT_PIN, HIGH); 
   } else if (msgString == "TurnLeft") {
     Serial.println("Svinger til venstre");
     digitalWrite(TURNLEFT_PIN, LOW);
