@@ -34,4 +34,6 @@ NodeTruck is a project aimed at controlling and monitoring a kids Ride-on car vi
 ### 2. Web Application Setup
 - Configure the app using `dotnet user-secrets`.
   ```bash
-  dotnet user-secrets set "Key" "Value"
+  dotnet user-secrets set "Broker" "from secrets.h.. hivemq.cloud"
+  dotnet user-secrets set "Username" "mqtt username from secrets.h.."
+  dotnet user-secrets set "Key" "mqtt password from secrets.h.."
