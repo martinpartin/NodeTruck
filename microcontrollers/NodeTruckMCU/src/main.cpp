@@ -19,10 +19,25 @@ PubSubClient client(espClient);
 
 // Variabel for å holde styr på siste kommando
 unsigned long lastCommandTime = 0;
+unsigned long lastTurnTime = 0;
+
 
 // Variabel for å håndtere heartbeats
 unsigned long lastHeartbeatTime = 0;
 const unsigned long HEARTBEAT_INTERVAL = 10000; // 10 sekunder
+
+void CenterCar()
+{
+  digitalWrite(TURNLEFT_PIN, HIGH);
+  digitalWrite(TURNRIGHT_PIN, HIGH);
+}
+
+void StopCar()
+{
+  digitalWrite(FORWARD_PIN, HIGH);
+  digitalWrite(BACKWARD_PIN, HIGH);
+}
+
 
 void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Melding mottatt [");
@@ -41,6 +56,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   // Oppdaterer tidspunktet for siste kommando
   lastCommandTime = millis();
 
+
   // Konverter til String for enklere sammenligning
   String msgString = String(message);
 
@@ -48,56 +64,25 @@ void callback(char* topic, byte* payload, unsigned int length) {
   if (msgString == "Forwards") {
     Serial.println("Kjører forover");
     digitalWrite(FORWARD_PIN, LOW);
-    // Sett de andre pinnene til LOW
     digitalWrite(BACKWARD_PIN, HIGH);
-    digitalWrite(TURNLEFT_PIN, HIGH);
-    digitalWrite(TURNRIGHT_PIN, HIGH);
   } else if (msgString == "Backwards") {
     Serial.println("Kjører bakover");
     digitalWrite(BACKWARD_PIN, LOW);
     digitalWrite(FORWARD_PIN, HIGH);
-    digitalWrite(TURNLEFT_PIN, HIGH);
-    digitalWrite(TURNRIGHT_PIN, HIGH);
-  } else if (msgString == "ForwardsLeft") {
-    Serial.println("Kjørerer til venstre");
-    digitalWrite(TURNLEFT_PIN, LOW);
-    digitalWrite(FORWARD_PIN, LOW);
-    digitalWrite(BACKWARD_PIN, HIGH);
-    digitalWrite(TURNRIGHT_PIN, HIGH);
-  } else if (msgString == "ForwardsRight") {
-    Serial.println("Kjørerer til høyre");
-    digitalWrite(TURNRIGHT_PIN, LOW);
-    digitalWrite(FORWARD_PIN, LOW);
-    digitalWrite(BACKWARD_PIN, HIGH);
-    digitalWrite(TURNLEFT_PIN, HIGH); 
-  } else if (msgString == "BackwardsLeft") {
-    Serial.println("Kjørerer til venstre");
-    digitalWrite(TURNLEFT_PIN, LOW);
-    digitalWrite(FORWARD_PIN, HIGH);
-    digitalWrite(BACKWARD_PIN, LOW);
-    digitalWrite(TURNRIGHT_PIN, HIGH);
-  } else if (msgString == "BackwardsRight") {
-    Serial.println("Kjørerer til høyre");
-    digitalWrite(TURNRIGHT_PIN, LOW);
-    digitalWrite(FORWARD_PIN, HIGH);
-    digitalWrite(BACKWARD_PIN, LOW);
-    digitalWrite(TURNLEFT_PIN, HIGH); 
   } else if (msgString == "TurnLeft") {
     Serial.println("Svinger til venstre");
     digitalWrite(TURNLEFT_PIN, LOW);
-    digitalWrite(FORWARD_PIN, HIGH);
-    digitalWrite(BACKWARD_PIN, HIGH);
     digitalWrite(TURNRIGHT_PIN, HIGH);
+    lastTurnTime = millis();
   } else if (msgString == "TurnRight") {
     Serial.println("Svinger til høyre");
     digitalWrite(TURNRIGHT_PIN, LOW);
-    digitalWrite(FORWARD_PIN, HIGH);
-    digitalWrite(BACKWARD_PIN, HIGH);
     digitalWrite(TURNLEFT_PIN, HIGH);
+    lastTurnTime = millis();
   } else if (msgString == "Stop") {
     Serial.println("Stopper");
-    // Sett alle pinner til LOW for å stoppe
       StopCar();
+      CenterCar();
   } else {
     Serial.println("Ukjent kommando");
   }
@@ -147,19 +132,13 @@ void setup() {
 
   // Sett alle pinner til LOW ved start
   StopCar();
+  CenterCar();
 
   // Initialiser tidspunktet for siste kommando og heartbeat
   lastCommandTime = millis();
   lastHeartbeatTime = millis();
 }
 
-void StopCar()
-{
-  digitalWrite(FORWARD_PIN, HIGH);
-  digitalWrite(BACKWARD_PIN, HIGH);
-  digitalWrite(TURNLEFT_PIN, HIGH);
-  digitalWrite(TURNRIGHT_PIN, HIGH);
-}
 void loop()
 {
   if (!client.connected()) {
@@ -183,8 +162,18 @@ void loop()
     // Stopper bilen
     Serial.println("Ingen kommando mottatt på 1 sekund, stopper bilen.");
     StopCar();
-
     // Oppdaterer lastCommandTime for å unngå gjentatte stoppkommandoer
     lastCommandTime = now;
   }
+
+  // Sjekk om det har gått mer enn 1 sekund siden siste sving
+  if (now - lastTurnTime > 200) {
+    Serial.println("Ingen Sving mottatt på 200 ms, sentrerer hjulene");
+     CenterCar();
+    // Oppdaterer lastTurnTime for å unngå gjentatte stoppkommandoer
+    lastTurnTime = now;
+  }
+
+
+
 }

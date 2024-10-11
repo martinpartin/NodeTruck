@@ -7,13 +7,17 @@
     <form id="car-control-form" asp-action="SendCommand" method="post">
         <div class="d-grid gap-2 d-md-block">
             <!-- Fremover knapp -->
-            <button id="forward-btn" type="submit" name="command" value="Forwards" class="btn btn-primary m-2 direction-btn">Forwards (W)</button>
+            <button id="forward-btn" type="button" name="command" value="Forwards" class="btn btn-primary m-2 direction-btn">Forwards (W)</button>
         </div>
         <div class="d-grid gap-2 d-md-block">
             <!-- Venstre og høyre knapper -->
-            <button id="left-btn" type="submit" name="command" value="TurnLeft" class="btn btn-warning m-2 direction-btn">Left (A)</button>
-            <button id="backward-btn" type="submit" name="command" value="Backwards" class="btn btn-secondary m-2 direction-btn">Backwards (S)</button>
-            <button id="right-btn" type="submit" name="command" value="TurnRight" class="btn btn-info m-2 direction-btn">Right (D)</button>
+            <button id="left-btn" type="button" name="command" value="TurnLeft" class="btn btn-warning m-2 direction-btn">Left (A)</button>
+            <button id="backward-btn" type="button" name="command" value="Backwards" class="btn btn-secondary m-2 direction-btn">Backwards (S)</button>
+            <button id="right-btn" type="button" name="command" value="TurnRight" class="btn btn-info m-2 direction-btn">Right (D)</button>
+        </div>
+        <div class="d-grid gap-2 d-md-block">
+            <!-- Stop knapp -->
+            <button id="stop-btn" type="button" name="command" value="Stop" class="btn btn-primary m-2 direction-btn">STOP (X)</button>
         </div>
     </form>
 </div>
@@ -24,24 +28,66 @@
         'w': 'forward-btn',
         'a': 'left-btn',
         's': 'backward-btn',
-        'd': 'right-btn'
+        'd': 'right-btn',
+        'x': 'stop-btn'
     };
+
+    // Set for å holde styr på aktive taster
+    const activeKeys = new Set();
+
+    // Variabel for å holde referansen til intervallet
+    let commandInterval = null;
+
+    function sendCombinedCommands() {
+        // Samle alle aktive knapper og send kommandoer basert på kombinasjonen
+        let commands = [];
+        if (activeKeys.has('w')) commands.push('Forwards');
+        if (activeKeys.has('a')) commands.push('TurnLeft');
+        if (activeKeys.has('s')) commands.push('Backwards');
+        if (activeKeys.has('d')) commands.push('TurnRight');
+        if (activeKeys.has('x')) commands.push('Stop');
+
+        if (commands.length > 0) {
+            console.log("Sending commands: ", commands.join('+'));
+            // Her kan du sende kommandoene til serveren via AJAX eller en annen metode
+            // fetch("/controller", { method: "POST", body: JSON.stringify({ commands: commands }) })
+        }
+    }
+
+    function startCommandInterval() {
+        if (!commandInterval) {
+            commandInterval = setInterval(sendCombinedCommands, 200);  // Gjenta hvert 200ms
+        }
+    }
+
+    function stopCommandInterval() {
+        if (commandInterval) {
+            clearInterval(commandInterval);  // Stopp intervallet
+            commandInterval = null;
+        }
+    }
 
     document.addEventListener('keydown', function (event) {
         const key = event.key.toLowerCase();
-        if (key in keyMap) {
-            event.preventDefault(); // Forhindre standard handling (som scrolling)
+        if (key in keyMap && !activeKeys.has(key)) {
+            event.preventDefault();
+            activeKeys.add(key);
             const button = document.getElementById(keyMap[key]);
-            button.classList.add('active');  // Legg til "active" klasse når tasten trykkes ned
-            button.click(); // Simuler et knappetrykk
+            button.classList.add('active');
+            startCommandInterval();  // Start å sende kommandoer hver 200 ms
         }
     });
 
     document.addEventListener('keyup', function (event) {
         const key = event.key.toLowerCase();
         if (key in keyMap) {
+            activeKeys.delete(key);
             const button = document.getElementById(keyMap[key]);
-            button.classList.remove('active');  // Fjern "active" klasse når tasten slippes
+            button.classList.remove('active');
+
+            if (activeKeys.size === 0) {
+                stopCommandInterval();  // Stopp intervallet hvis ingen taster er aktive
+            }
         }
     });
 </script>
