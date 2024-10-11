@@ -58,37 +58,37 @@ void callback(char* topic, byte* payload, unsigned int length) {
     digitalWrite(FORWARD_PIN, HIGH);
     digitalWrite(TURNLEFT_PIN, HIGH);
     digitalWrite(TURNRIGHT_PIN, HIGH);
-  } else if (msgString == "ForwardsLeft") {
+  } else if (msgString == "Forwards+Left") {
     Serial.println("Kjørerer til venstre");
     digitalWrite(TURNLEFT_PIN, LOW);
     digitalWrite(FORWARD_PIN, LOW);
     digitalWrite(BACKWARD_PIN, HIGH);
     digitalWrite(TURNRIGHT_PIN, HIGH);
-  } else if (msgString == "ForwardsRight") {
+  } else if (msgString == "Forwards+Right") {
     Serial.println("Kjørerer til høyre");
     digitalWrite(TURNRIGHT_PIN, LOW);
     digitalWrite(FORWARD_PIN, LOW);
     digitalWrite(BACKWARD_PIN, HIGH);
     digitalWrite(TURNLEFT_PIN, HIGH); 
-  } else if (msgString == "BackwardsLeft") {
-    Serial.println("Kjørerer til venstre");
+  } else if (msgString == "Backwards+Left") {
+    Serial.println("Rygger til venstre");
     digitalWrite(TURNLEFT_PIN, LOW);
     digitalWrite(FORWARD_PIN, HIGH);
     digitalWrite(BACKWARD_PIN, LOW);
     digitalWrite(TURNRIGHT_PIN, HIGH);
-  } else if (msgString == "BackwardsRight") {
-    Serial.println("Kjørerer til høyre");
+  } else if (msgString == "Backwards+Right") {
+    Serial.println("Rygger til høyre");
     digitalWrite(TURNRIGHT_PIN, LOW);
     digitalWrite(FORWARD_PIN, HIGH);
     digitalWrite(BACKWARD_PIN, LOW);
     digitalWrite(TURNLEFT_PIN, HIGH); 
-  } else if (msgString == "TurnLeft") {
+  } else if (msgString == "Left") {
     Serial.println("Svinger til venstre");
     digitalWrite(TURNLEFT_PIN, LOW);
     digitalWrite(FORWARD_PIN, HIGH);
     digitalWrite(BACKWARD_PIN, HIGH);
     digitalWrite(TURNRIGHT_PIN, HIGH);
-  } else if (msgString == "TurnRight") {
+  } else if (msgString == "Right") {
     Serial.println("Svinger til høyre");
     digitalWrite(TURNRIGHT_PIN, LOW);
     digitalWrite(FORWARD_PIN, HIGH);
