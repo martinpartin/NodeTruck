@@ -30,6 +30,7 @@ NodeTruck is a project aimed at controlling and monitoring a kids Ride-on car vi
 ### 1. Microcontroller Setup
 - Upload the `secrets.h` file with necessary credentials.
 - Flash the firmware onto the WeMos board.
+- Configure [WifiManager](https://github.com/tzapu/WiFiManager) ("AutoConnectAP", "password")
 
 ### 2. Web Application Setup
 - Configure the app using `dotnet user-secrets`.
