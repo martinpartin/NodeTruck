@@ -8,10 +8,10 @@
 #include "secrets.h" // Inneholder mqtt_server, mqtt_username, mqtt_password
 #include "Arduino.h"
 const int mqtt_port = 8883;
-#define MQTT_MAX_PACKET_SIZE 256
+#define MQTT_MAX_PACKET_SIZE 512
 
 
-#define FIRMWARE_VERSION "0.0.3"
+#define FIRMWARE_VERSION "0.0.4"
 #define BUILD_DATE __DATE__
 #define BUILD_TIME __TIME__
 
@@ -34,7 +34,7 @@ const unsigned long HEARTBEAT_INTERVAL = 10000; // 10 sekunder
 
 void PostWifiTelemetry()
 {
-  size_t size = 128;
+  size_t size = 512;
 
   Serial.print("Pakker wifi telemetri: ");
 
@@ -59,7 +59,7 @@ void PostWifiTelemetry()
 
 void PostBaseTelemetry()
 {
-  size_t size = 256;
+  size_t size = 512;
 
   Serial.print("Pakker Base telemetri: ");
   unsigned long now = millis();
@@ -85,23 +85,15 @@ void PostBaseTelemetry()
 
 void PostEspTelemetry()
 {
-  size_t size = 128;
+  size_t size = 512;
 
   Serial.print("Pakker esp telemetri: ");
 
   DynamicJsonDocument doc(size);
 
   // doc["esp"]["vcc"] = ESP.getVcc();
-  doc["esp"]["freeHeap"] = ESP.getFreeHeap();
   doc["esp"]["chipId"] = ESP.getChipId();                                           // Hent ESP-brikke ID
-  doc["esp"]["flashChipSize"] = ESP.getFlashChipRealSize();                         // Få flashstørrelse
-  doc["esp"]["flashChipMode"] = (ESP.getFlashChipMode() == FM_QIO) ? "QIO" : "DIO"; // Få Flash Chip Mode
   doc["esp"]["reset_reason"] = ESP.getResetReason();
-  doc["esp"]["flash_chip_speed"] = ESP.getFlashChipSpeed();
-  doc["esp"]["cpu_frequency"] = ESP.getCpuFreqMHz();
-  doc["esp"]["free_sketch_space"] = ESP.getFreeSketchSpace();
-  doc["esp"]["sdk_version"] = ESP.getSdkVersion();
-  doc["esp"]["heap_fragmentation"] = ESP.getHeapFragmentation();
   doc["esp"]["reset_info"] = ESP.getResetInfo();
   doc["code"]["firmware_version"] = FIRMWARE_VERSION;
   doc["code"]["build_date"] = BUILD_DATE;
@@ -116,6 +108,7 @@ void PostEspTelemetry()
   Serial.println(jsonString);
   Serial.println(jsonString.length());
   client.publish("telemetry/esp", jsonString.c_str());
+  Serial.println("postet esp telemetri..");
 }
 
 void callback(char *topic, byte *payload, unsigned int length)
@@ -208,9 +201,14 @@ void callback(char *topic, byte *payload, unsigned int length)
   }
   else if (msgString == "Ping")
   {
+    Serial.println("Ping");
     PostBaseTelemetry();
-    PostEspTelemetry();
+    Serial.println("!!!PostBaseTelemetry");
     PostWifiTelemetry();
+    Serial.println("!!!PostWifiTelemetry");
+    PostEspTelemetry();
+    Serial.println("!!!PostEspTelemetry");
+
   }
   else if (msgString == "Stop")
   {
@@ -237,6 +235,9 @@ void reconnect()
     {
       Serial.println("Tilkoblet");
       client.subscribe("car/control"); // Abonner på ønsket emne
+      PostWifiTelemetry();
+      PostEspTelemetry();
+
     }
     else
     {
@@ -282,9 +283,6 @@ void setup()
   // Initialiser tidspunktet for siste kommando og heartbeat
   lastCommandTime = millis();
   lastHeartbeatTime = millis();
-  PostBaseTelemetry();
-  PostEspTelemetry();
-  PostWifiTelemetry();
 }
 
 void StopCar()
