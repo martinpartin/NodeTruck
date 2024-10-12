@@ -6,7 +6,6 @@
 <link rel="stylesheet" href="~/css/site.css">
 
 <div class="text-center control-panel">
-    <h1 class="display-4">Car Control</h1>
     <div class="button-row">
         <!-- Fremover knapp -->
         <button id="forward-btn" type="button" name="command" value="Forwards" class="btn btn-primary m-2 direction-btn">Forwards (W)</button>
@@ -18,35 +17,15 @@
         <button id="right-btn" type="button" name="command" value="TurnRight" class="btn btn-info m-2 direction-btn">Right (D)</button>
     </div>
     <div class="button-row">
-        <!-- Stop knapp -->
+        <!-- Stop og ping knapper -->
         <button id="stop-btn" type="button" name="command" value="Stop" class="btn btn-danger m-2 direction-btn">STOP (X)</button>
-    </div>
-    <div class="button-row">
-        <!-- Ping knapp -->
         <button id="ping-btn" type="button" name="command" value="Ping" class="btn btn-success m-2 direction-btn">PING (C)</button>
+
     </div>
 </div>
 
 <style>
 /* Generelle layoutforbedringer */
-body {
-    background-color: #f4f4f9;
-    font-family: 'Arial', sans-serif;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-
-.control-panel {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    max-width: 400px;
-}
 
 h1 {
     color: #333;
@@ -55,11 +34,7 @@ h1 {
 }
 
 /* Forbedret layout for knappene */
-.button-row {
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 20px;
-}
+
 
 /* Knappestilforbedringer */
 .direction-btn {
