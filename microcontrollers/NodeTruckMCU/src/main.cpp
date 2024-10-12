@@ -1,4 +1,11 @@
-#include <ESP8266WiFi.h>
+#if defined(ESP8266)
+  #include <ESP8266WiFi.h>
+#elif defined(ESP32)
+  #include <WiFi.h>
+#endif
+
+#include <WiFiClientSecure.h> 
+
 #include <WiFiManager.h>
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
@@ -17,11 +24,20 @@ const int mqtt_port = 8883;
 
 
 // Definer GPIO-pinnene for hver operasjon
-const int FORWARD_PIN = D1;   // Endre til riktig pinne
-const int BACKWARD_PIN = D2;  // Endre til riktig pinne
-const int TURNLEFT_PIN = D3;  // Endre til riktig pinne
-const int TURNRIGHT_PIN = D4; // Endre til riktig pinne
+#if defined(ESP8266)
+  const int FORWARD_PIN = D1;   // Endre til riktig pinne for ESP8266
+  const int BACKWARD_PIN = D2;  
+  const int TURNLEFT_PIN = D3;  
+  const int TURNRIGHT_PIN = D4;
+#elif defined(ESP32)
+  const int FORWARD_PIN = 18;   // Endre til riktig pinne for ESP32
+  const int BACKWARD_PIN = 19;  
+  const int TURNLEFT_PIN = 21;  
+  const int TURNRIGHT_PIN = 22;
+#endif
+
 bool _stopped = false;
+String clientId = "Client-";
 
 WiFiClientSecure espClient;
 PubSubClient client(espClient);
@@ -34,6 +50,16 @@ int numberOfResets = 0;
 // Variabel for å håndtere heartbeats
 unsigned long lastHeartbeatTime = 0;
 const unsigned long HEARTBEAT_INTERVAL = 30000; // 10 sekunder
+
+void StopCar()
+{
+  digitalWrite(FORWARD_PIN, HIGH);
+  digitalWrite(BACKWARD_PIN, HIGH);
+  digitalWrite(TURNLEFT_PIN, HIGH);
+  digitalWrite(TURNRIGHT_PIN, HIGH);
+  _stopped = true;
+  Serial.println("Stopper bilen..");
+}
 
 void PostWifiTelemetry()
 {
@@ -100,9 +126,17 @@ void PostEspTelemetry()
   DynamicJsonDocument doc(size);
 
   // doc["esp"]["vcc"] = ESP.getVcc();
-  doc["esp"]["chipId"] = ESP.getChipId();                                           // Hent ESP-brikke ID
+
+
+#if defined(ESP8266)
+  doc["esp"]["type"] = "ESP8266";
   doc["esp"]["reset_reason"] = ESP.getResetReason();
   doc["esp"]["reset_info"] = ESP.getResetInfo();
+#elif defined(ESP32)
+  doc["esp"]["type"] = "ESP32";
+  doc["esp"]["reset_reason"] = (int)esp_reset_reason();  // Hent reset årsak for ESP32
+#endif
+
   doc["code"]["firmware_version"] = FIRMWARE_VERSION;
   doc["code"]["build_date"] = BUILD_DATE;
   doc["code"]["build_time"] = BUILD_TIME;
@@ -241,8 +275,6 @@ void reconnect()
   while (!client.connected())
   {
     Serial.print("Forsøker MQTT-tilkobling...");
-    String clientId = "ESP8266Client-";
-    clientId += String(ESP.getChipId(), HEX);
 
     // Koble til med brukernavn og passord
     if (client.connect(clientId.c_str(), mqtt_username, mqtt_password))
@@ -268,6 +300,14 @@ void reconnect()
 void setup()
 {
   Serial.begin(9600);
+
+  #if defined(ESP8266)
+    clientId += String(ESP.getChipId(), HEX);  // Bruk getChipId for ESP8266
+  #elif defined(ESP32)
+    uint64_t chipid = ESP.getEfuseMac();       // Bruk Efuse MAC for ESP32
+    clientId += String((uint32_t)(chipid >> 32), HEX);  // Bruk laveste 4 byte som "chipId"
+  #endif
+
 
   // WiFi-tilkobling med WiFiManager
   WiFiManager wm;
@@ -301,15 +341,6 @@ void setup()
   lastHeartbeatTime = millis();
 }
 
-void StopCar()
-{
-  digitalWrite(FORWARD_PIN, HIGH);
-  digitalWrite(BACKWARD_PIN, HIGH);
-  digitalWrite(TURNLEFT_PIN, HIGH);
-  digitalWrite(TURNRIGHT_PIN, HIGH);
-  _stopped = true;
-  Serial.println("Stopper bilen..");
-}
 void loop()
 {
   if (!client.connected())
