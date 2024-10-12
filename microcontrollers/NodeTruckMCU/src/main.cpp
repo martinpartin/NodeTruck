@@ -18,7 +18,7 @@ const int mqtt_port = 8883;
 #define MQTT_MAX_PACKET_SIZE 512
 
 
-#define FIRMWARE_VERSION "0.0.4"
+#define FIRMWARE_VERSION "0.0.5X"
 #define BUILD_DATE __DATE__
 #define BUILD_TIME __TIME__
 
