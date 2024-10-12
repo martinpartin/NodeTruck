@@ -18,6 +18,10 @@
         <!-- Stop knapp -->
         <button id="stop-btn" type="button" name="command" value="Stop" class="btn btn-primary m-2 direction-btn">STOP (X)</button>
     </div>
+    <div class="d-grid gap-2 d-md-block">
+        <!-- Stop knapp -->
+        <button id="ping-btn" type="button" name="command" value="Ping" class="btn btn-primary m-2 direction-btn">PING (C)</button>
+    </div>
 </div>
 
 <script>
@@ -27,7 +31,8 @@
         'a': 'left-btn',
         's': 'backward-btn',
         'd': 'right-btn',
-        'x': 'stop-btn'
+        'x': 'stop-btn',
+        'c': 'ping-btn'
     };
 
     // Set for å holde styr på aktive taster
@@ -61,6 +66,7 @@
         if (activeKeys.has('a')) commands.push('Left');
         if (activeKeys.has('d')) commands.push('Right');
         if (activeKeys.has('x')) commands.push('Stop');
+        if (activeKeys.has('c')) commands.push('Ping');
 
         if (commands.length > 0) {
             // Send kombinerte kommandoer som f.eks. "Forwards+TurnLeft"
