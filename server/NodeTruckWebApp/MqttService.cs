@@ -1,12 +1,16 @@
 using MQTTnet;
 using MQTTnet.Client;
 using Microsoft.Extensions.Options;
+using System.Text;
 
 public class MqttService : IMqttService, IDisposable
 {
     private readonly IMqttClient _mqttClient;
     private readonly MqttSettings _settings;
     private bool _disposed = false;
+
+    public event Action<string, string>? OnMessageReceived; 
+
 
     public MqttService(IOptions<MqttSettings> options)
     {
@@ -33,6 +37,31 @@ public class MqttService : IMqttService, IDisposable
         }
 
         _mqttClient.ConnectAsync(mqttOptions).Wait();
+
+
+        _mqttClient.ApplicationMessageReceivedAsync += async e =>
+        {
+            var topic = e.ApplicationMessage.Topic;
+            var payload = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment);
+            Console.WriteLine($"{topic} {payload}");
+            // Trigger eventet når en melding mottas
+            OnMessageReceived?.Invoke(topic, payload);
+
+            await Task.CompletedTask; // Påkrevd av signaturen til ApplicationMessageReceivedAsync
+        };
+
+
+
+    }
+
+    public async Task SubscribeAsync(string topic)
+    {
+        if (_mqttClient.IsConnected)
+        {
+            await _mqttClient.SubscribeAsync(new MQTTnet.Client.MqttClientSubscribeOptionsBuilder()
+                .WithTopicFilter(topic)
+                .Build());
+        }
     }
 
     public async Task PublishAsync(string topic, string payload)

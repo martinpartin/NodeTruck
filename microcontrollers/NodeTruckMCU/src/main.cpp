@@ -21,16 +21,19 @@ const int FORWARD_PIN = D1;   // Endre til riktig pinne
 const int BACKWARD_PIN = D2;  // Endre til riktig pinne
 const int TURNLEFT_PIN = D3;  // Endre til riktig pinne
 const int TURNRIGHT_PIN = D4; // Endre til riktig pinne
+bool _stopped = false;
 
 WiFiClientSecure espClient;
 PubSubClient client(espClient);
 
 // Variabel for å holde styr på siste kommando
 unsigned long lastCommandTime = 0;
+unsigned long lastReconnectTime = 0;
+int numberOfResets = 0;
 
 // Variabel for å håndtere heartbeats
 unsigned long lastHeartbeatTime = 0;
-const unsigned long HEARTBEAT_INTERVAL = 10000; // 10 sekunder
+const unsigned long HEARTBEAT_INTERVAL = 30000; // 10 sekunder
 
 void PostWifiTelemetry()
 {
@@ -65,11 +68,16 @@ void PostBaseTelemetry()
   unsigned long now = millis();
   unsigned long uptime = now / 1000;                                   // Systemoppetid i sekunder
   unsigned long timeSinceLastCommand = (now - lastCommandTime) / 1000; // Tid siden siste kommando i sekunder
+  unsigned long timeSincelastReconnectTime = (now - lastReconnectTime) / 1000;
+
 
   DynamicJsonDocument doc(size);
 
   doc["uptime"] = uptime;
   doc["time_since_last_command"] = timeSinceLastCommand;
+  doc["time_since_last_reconnect"] = timeSincelastReconnectTime;
+  doc["time_since_last_numberOfReconnects"] = numberOfResets;
+  
 
   // Serialisere JSON til en streng
 
@@ -136,6 +144,7 @@ void callback(char *topic, byte *payload, unsigned int length)
   // Styre GPIO-pinner basert på meldingsinnhold
   if (msgString == "Forwards")
   {
+    _stopped = false;
     Serial.println("Kjører forover");
     digitalWrite(FORWARD_PIN, LOW);
     // Sett de andre pinnene til LOW
@@ -145,6 +154,7 @@ void callback(char *topic, byte *payload, unsigned int length)
   }
   else if (msgString == "Backwards")
   {
+    _stopped = false;
     Serial.println("Kjører bakover");
     digitalWrite(BACKWARD_PIN, LOW);
     digitalWrite(FORWARD_PIN, HIGH);
@@ -153,6 +163,7 @@ void callback(char *topic, byte *payload, unsigned int length)
   }
   else if (msgString == "Forwards+Left")
   {
+    _stopped = false;
     Serial.println("Kjørerer til venstre");
     digitalWrite(TURNLEFT_PIN, LOW);
     digitalWrite(FORWARD_PIN, LOW);
@@ -161,6 +172,7 @@ void callback(char *topic, byte *payload, unsigned int length)
   }
   else if (msgString == "Forwards+Right")
   {
+    _stopped = false;
     Serial.println("Kjørerer til høyre");
     digitalWrite(TURNRIGHT_PIN, LOW);
     digitalWrite(FORWARD_PIN, LOW);
@@ -169,6 +181,7 @@ void callback(char *topic, byte *payload, unsigned int length)
   }
   else if (msgString == "Backwards+Left")
   {
+    _stopped = false;
     Serial.println("Rygger til venstre");
     digitalWrite(TURNLEFT_PIN, LOW);
     digitalWrite(FORWARD_PIN, HIGH);
@@ -177,6 +190,7 @@ void callback(char *topic, byte *payload, unsigned int length)
   }
   else if (msgString == "Backwards+Right")
   {
+    _stopped = false;
     Serial.println("Rygger til høyre");
     digitalWrite(TURNRIGHT_PIN, LOW);
     digitalWrite(FORWARD_PIN, HIGH);
@@ -235,6 +249,8 @@ void reconnect()
     {
       Serial.println("Tilkoblet");
       client.subscribe("car/control"); // Abonner på ønsket emne
+      lastReconnectTime = millis();
+      numberOfResets++;
       PostWifiTelemetry();
       PostEspTelemetry();
 
@@ -291,6 +307,8 @@ void StopCar()
   digitalWrite(BACKWARD_PIN, HIGH);
   digitalWrite(TURNLEFT_PIN, HIGH);
   digitalWrite(TURNRIGHT_PIN, HIGH);
+  _stopped = true;
+  Serial.println("Stopper bilen..");
 }
 void loop()
 {
@@ -310,13 +328,10 @@ void loop()
   }
 
   // Sjekk om det har gått mer enn 1 sekund siden siste kommando
-  if (now - lastCommandTime > 1000)
+  if (!_stopped && (now - lastCommandTime > 1000))
   {
     // Stopper bilen
     Serial.println("Ingen kommando mottatt på 1 sekund, stopper bilen.");
     StopCar();
-
-    // Oppdaterer lastCommandTime for å unngå gjentatte stoppkommandoer
-    lastCommandTime = now;
   }
 }
