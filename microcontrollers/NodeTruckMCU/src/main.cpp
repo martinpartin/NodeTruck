@@ -11,6 +11,11 @@ const int mqtt_port = 8883;
 #define MQTT_MAX_PACKET_SIZE 256
 
 
+#define FIRMWARE_VERSION "0.0.3"
+#define BUILD_DATE __DATE__
+#define BUILD_TIME __TIME__
+
+
 // Definer GPIO-pinnene for hver operasjon
 const int FORWARD_PIN = D1;   // Endre til riktig pinne
 const int BACKWARD_PIN = D2;  // Endre til riktig pinne
@@ -49,7 +54,7 @@ void PostWifiTelemetry()
   Serial.print("Sender wifi telemetri: ");
   Serial.println(jsonString);
   Serial.println(jsonString.length());
-  client.publish("car/telemetry", jsonString.c_str());
+  client.publish("telemetry/wifi", jsonString.c_str());
 }
 
 void PostBaseTelemetry()
@@ -75,7 +80,7 @@ void PostBaseTelemetry()
   Serial.print("Sender base telemetri: ");
   Serial.println(jsonString);
   Serial.println(jsonString.length());
-  client.publish("car/telemetry", jsonString.c_str());
+  client.publish("telemetry/base", jsonString.c_str());
 }
 
 void PostEspTelemetry()
@@ -91,6 +96,17 @@ void PostEspTelemetry()
   doc["esp"]["chipId"] = ESP.getChipId();                                           // Hent ESP-brikke ID
   doc["esp"]["flashChipSize"] = ESP.getFlashChipRealSize();                         // Få flashstørrelse
   doc["esp"]["flashChipMode"] = (ESP.getFlashChipMode() == FM_QIO) ? "QIO" : "DIO"; // Få Flash Chip Mode
+  doc["esp"]["reset_reason"] = ESP.getResetReason();
+  doc["esp"]["flash_chip_speed"] = ESP.getFlashChipSpeed();
+  doc["esp"]["cpu_frequency"] = ESP.getCpuFreqMHz();
+  doc["esp"]["free_sketch_space"] = ESP.getFreeSketchSpace();
+  doc["esp"]["sdk_version"] = ESP.getSdkVersion();
+  doc["esp"]["heap_fragmentation"] = ESP.getHeapFragmentation();
+  doc["esp"]["reset_info"] = ESP.getResetInfo();
+  doc["code"]["firmware_version"] = FIRMWARE_VERSION;
+  doc["code"]["build_date"] = BUILD_DATE;
+  doc["code"]["build_time"] = BUILD_TIME;
+  
 
   String jsonString;
   serializeJson(doc, jsonString);
@@ -99,7 +115,7 @@ void PostEspTelemetry()
   Serial.print("Sender esp telemetri: ");
   Serial.println(jsonString);
   Serial.println(jsonString.length());
-  client.publish("car/telemetry", jsonString.c_str());
+  client.publish("telemetry/esp", jsonString.c_str());
 }
 
 void callback(char *topic, byte *payload, unsigned int length)
@@ -238,7 +254,6 @@ void setup()
 
   // WiFi-tilkobling med WiFiManager
   WiFiManager wm;
-  wm.setTimeout(30);
   wm.setHostname("NodeTruck");
   if (!wm.autoConnect("NodeTruck", "password"))
   {
