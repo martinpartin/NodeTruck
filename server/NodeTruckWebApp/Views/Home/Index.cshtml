@@ -2,137 +2,188 @@
     ViewData["Title"] = "Control";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Car Control</h1>
-    <div class="d-grid gap-2 d-md-block">
+<!-- Legger til eksternt stilark hvis nødvendig -->
+<link rel="stylesheet" href="~/css/site.css">
+
+<div class="text-center control-panel">
+    <div class="button-row">
         <!-- Fremover knapp -->
         <button id="forward-btn" type="button" name="command" value="Forwards" class="btn btn-primary m-2 direction-btn">Forwards (W)</button>
     </div>
-    <div class="d-grid gap-2 d-md-block">
+    <div class="button-row">
         <!-- Venstre og høyre knapper -->
-        <button id="left-btn" type="button" name="command" value="TurnLeft" class="btn btn-warning m-2 direction-btn">Left (A)</button>
+        <button id="left-btn" type="button" name="command" value="Left" class="btn btn-warning m-2 direction-btn">Left (A)</button>
         <button id="backward-btn" type="button" name="command" value="Backwards" class="btn btn-secondary m-2 direction-btn">Backwards (S)</button>
-        <button id="right-btn" type="button" name="command" value="TurnRight" class="btn btn-info m-2 direction-btn">Right (D)</button>
+        <button id="right-btn" type="button" name="command" value="Right" class="btn btn-info m-2 direction-btn">Right (D)</button>
     </div>
-    <div class="d-grid gap-2 d-md-block">
-        <!-- Stop knapp -->
-        <button id="stop-btn" type="button" name="command" value="Stop" class="btn btn-primary m-2 direction-btn">STOP (X)</button>
-    </div>
-    <div class="d-grid gap-2 d-md-block">
-        <!-- Stop knapp -->
-        <button id="ping-btn" type="button" name="command" value="Ping" class="btn btn-primary m-2 direction-btn">PING (C)</button>
+    <div class="button-row">
+        <!-- Stop og ping knapper -->
+        <button id="stop-btn" type="button" name="command" value="Stop" class="btn btn-danger m-2 direction-btn">STOP (X)</button>
+        <button id="ping-btn" type="button" name="command" value="Ping" class="btn btn-success m-2 direction-btn">PING (C)</button>
+
     </div>
 </div>
 
-<script>
-    // Map for tastene WASD til kommandoene
-    const keyMap = {
-        'w': 'forward-btn',
-        'a': 'left-btn',
-        's': 'backward-btn',
-        'd': 'right-btn',
-        'x': 'stop-btn',
-        'c': 'ping-btn'
-    };
-
-    // Set for å holde styr på aktive taster
-    const activeKeys = new Set();
-    let commandInterval = null;
-
-    async function sendCommand(command) {
-        try {
-            const response = await fetch('/Home/SendCommand', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({ command: command })
-            });
-
-            if (!response.ok) {
-                console.error('Feil ved sending av kommando:', response.statusText);
-            } else {
-                console.log(`Kommando sendt: ${command}`);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }
-
-    function sendCombinedCommands() {
-        let commands = [];
-        if (activeKeys.has('w')) commands.push('Forwards');
-        if (activeKeys.has('s')) commands.push('Backwards');
-        if (activeKeys.has('a')) commands.push('Left');
-        if (activeKeys.has('d')) commands.push('Right');
-        if (activeKeys.has('x')) commands.push('Stop');
-        if (activeKeys.has('c')) commands.push('Ping');
-
-        if (commands.length > 0) {
-            // Send kombinerte kommandoer som f.eks. "Forwards+TurnLeft"
-            sendCommand(commands.join('+'));
-        }
-    }
-
-    function startCommandInterval() {
-        if (!commandInterval) {
-            commandInterval = setInterval(sendCombinedCommands, 200);  // Gjenta hvert 200ms
-        }
-    }
-
-    function stopCommandInterval() {
-        if (commandInterval) {
-            clearInterval(commandInterval);  // Stopp intervallet
-            commandInterval = null;
-        }
-    }
-
-    document.addEventListener('keydown', function (event) {
-        const key = event.key.toLowerCase();
-        if (key in keyMap && !activeKeys.has(key)) {
-            event.preventDefault();
-            activeKeys.add(key);
-            const button = document.getElementById(keyMap[key]);
-            button.classList.add('active');
-            startCommandInterval();  // Start å sende kommandoer hver 200 ms
-        }
-    });
-
-    document.addEventListener('keyup', function (event) {
-        const key = event.key.toLowerCase();
-        if (key in keyMap) {
-            activeKeys.delete(key);
-            const button = document.getElementById(keyMap[key]);
-            button.classList.remove('active');
-
-            if (activeKeys.size === 0) {
-                stopCommandInterval();  // Stopp intervallet hvis ingen taster er aktive
-            }
-        }
-    });
-</script>
-
 <style>
-    /* CSS for å indikere at en knapp er aktiv */
-    .active {
-        transform: scale(1.1);
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    }
+/* Generelle layoutforbedringer */
 
-    /* Layout for knappene */
-    .direction-btn {
-        width: 150px;
-        height: 50px;
-        font-size: 16px;
-    }
+h1 {
+    color: #333;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
 
-    .d-grid {
-        display: grid;
-        justify-content: center;
-    }
+/* Forbedret layout for knappene */
 
-    .d-md-block {
-        display: flex;
-        justify-content: center;
-    }
+
+/* Knappestilforbedringer */
+.direction-btn {
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    border-radius: 5px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Hover-effekt */
+.direction-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Aktiv stil for knapper */
+.active-button {
+    border: 2px solid #000;
+    background-color: #ddd;
+    transform: scale(1.05);  /* Liten skalaøkning for visuelt feedback */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);  /* Økt skygge når knappen er aktiv */
+}
+
+/* Tilpass farger for knappene */
+#forward-btn {
+    background-color: #007bff;
+    color: white;
+}
+
+#left-btn {
+    background-color: #ffc107;
+    color: white;
+}
+
+#backward-btn {
+    background-color: #6c757d;
+    color: white;
+}
+
+#right-btn {
+    background-color: #17a2b8;
+    color: white;
+}
+
+#stop-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+#ping-btn {
+    background-color: #28a745;
+    color: white;
+}
+
 </style>
+
+<script>
+// Map for tastene WASD til kommandoene
+const keyMap = {
+    'w': 'forward-btn',
+    'a': 'left-btn',
+    's': 'backward-btn',
+    'd': 'right-btn',
+    'x': 'stop-btn',
+    'c': 'ping-btn'
+};
+
+// Set for å holde styr på aktive taster
+const activeKeys = new Set();
+let commandInterval = null;
+
+// Funksjon for å sende kommando
+async function sendCommand(command) {
+    try {
+        const response = await fetch('/Home/SendCommand', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({ command: command })
+        });
+    } catch (error) {
+        console.error('Error sending command:', error);
+    }
+}
+
+// Funksjon for å legge til aktiv stil til knapper
+function setActiveButton(button) {
+    button.classList.add('active-button');
+}
+
+// Funksjon for å fjerne aktiv stil fra knapper
+function removeActiveButton(button) {
+    button.classList.remove('active-button');
+}
+
+// Event listener for knappetrykk (museklikk)
+document.querySelectorAll('.direction-btn').forEach(button => {
+    button.addEventListener('mousedown', () => {
+        sendCommand(button.value);  // Send kommando umiddelbart ved trykk
+        setActiveButton(button);    // Visuell indikasjon på at knappen er aktiv
+    });
+
+    button.addEventListener('mouseup', () => {
+        removeActiveButton(button);  // Fjern aktiv indikasjon når knappen slippes
+    });
+
+    button.addEventListener('mouseleave', () => {
+        removeActiveButton(button);  // Fjern aktiv indikasjon hvis musen flyttes bort
+    });
+});
+
+// Keydown event for tastaturstyring
+document.addEventListener('keydown', (event) => {
+    const buttonId = keyMap[event.key.toLowerCase()];
+    if (buttonId) {
+        const button = document.getElementById(buttonId);
+
+        if (!activeKeys.has(event.key)) {
+            activeKeys.add(event.key);
+
+            // Start kontinuerlig sending for 'w' (fremover) og 's' (bakover)
+            if (event.key.toLowerCase() === 'w' || event.key.toLowerCase() === 's') {
+                commandInterval = setInterval(() => {
+                    sendCommand(button.value);
+                }, 100);  // Juster intervallet etter behov
+            } else {
+                sendCommand(button.value);  // Send kommando umiddelbart for andre taster
+            }
+            setActiveButton(button);  // Visuell indikasjon på at knappen er aktiv
+        }
+    }
+});
+
+// Keyup for å stoppe aktiv handling
+document.addEventListener('keyup', (event) => {
+    const buttonId = keyMap[event.key.toLowerCase()];
+    if (buttonId) {
+        const button = document.getElementById(buttonId);
+        removeActiveButton(button);  // Fjern visuell indikasjon når tasten slippes
+    }
+
+    activeKeys.delete(event.key);
+
+    // Stopp kontinuerlig sending når 'w' eller 's' slippes
+    if (event.key.toLowerCase() === 'w' || event.key.toLowerCase() === 's') {
+        clearInterval(commandInterval);
+        commandInterval = null;
+    }
+});
+</script>

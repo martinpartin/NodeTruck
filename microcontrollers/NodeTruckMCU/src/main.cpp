@@ -18,7 +18,7 @@ const int mqtt_port = 8883;
 #define MQTT_MAX_PACKET_SIZE 512
 
 
-#define FIRMWARE_VERSION "0.0.4"
+#define FIRMWARE_VERSION "0.0.9"
 #define BUILD_DATE __DATE__
 #define BUILD_TIME __TIME__
 
@@ -36,14 +36,17 @@ const int mqtt_port = 8883;
   const int TURNRIGHT_PIN = 22;
 #endif
 
-bool _stopped = false;
+bool _carIsMoving = true;
+bool _stearingIsMoving = true;
+
 String clientId = "Client-";
 
 WiFiClientSecure espClient;
 PubSubClient client(espClient);
 
 // Variabel for å holde styr på siste kommando
-unsigned long lastCommandTime = 0;
+unsigned long lastThrottleCommandTime = 0;
+unsigned long lastStearingCommandTime = 0;
 unsigned long lastReconnectTime = 0;
 int numberOfResets = 0;
 
@@ -57,8 +60,17 @@ void StopCar()
   digitalWrite(BACKWARD_PIN, HIGH);
   digitalWrite(TURNLEFT_PIN, HIGH);
   digitalWrite(TURNRIGHT_PIN, HIGH);
-  _stopped = true;
+  _carIsMoving = false;
+  _stearingIsMoving = false;
   Serial.println("Stopper bilen..");
+}
+
+void StopCarStearing()
+{
+  digitalWrite(TURNLEFT_PIN, HIGH);
+  digitalWrite(TURNRIGHT_PIN, HIGH);
+  _stearingIsMoving = false;
+  Serial.println("Resetter styring bilen..");
 }
 
 void PostWifiTelemetry()
@@ -93,7 +105,7 @@ void PostBaseTelemetry()
   Serial.print("Pakker Base telemetri: ");
   unsigned long now = millis();
   unsigned long uptime = now / 1000;                                   // Systemoppetid i sekunder
-  unsigned long timeSinceLastCommand = (now - lastCommandTime) / 1000; // Tid siden siste kommando i sekunder
+  unsigned long timeSinceLastCommand = (now - lastThrottleCommandTime) / 1000; // Tid siden siste kommando i sekunder
   unsigned long timeSincelastReconnectTime = (now - lastReconnectTime) / 1000;
 
 
@@ -169,8 +181,6 @@ void callback(char *topic, byte *payload, unsigned int length)
   message[length] = '\0'; // Null-terminere strengen
   Serial.println();
 
-  // Oppdaterer tidspunktet for siste kommando
-  lastCommandTime = millis();
 
   // Konverter til String for enklere sammenligning
   String msgString = String(message);
@@ -178,74 +188,37 @@ void callback(char *topic, byte *payload, unsigned int length)
   // Styre GPIO-pinner basert på meldingsinnhold
   if (msgString == "Forwards")
   {
-    _stopped = false;
+    _carIsMoving = true;
     Serial.println("Kjører forover");
     digitalWrite(FORWARD_PIN, LOW);
-    // Sett de andre pinnene til LOW
     digitalWrite(BACKWARD_PIN, HIGH);
-    digitalWrite(TURNLEFT_PIN, HIGH);
-    digitalWrite(TURNRIGHT_PIN, HIGH);
+    lastThrottleCommandTime = millis();
   }
   else if (msgString == "Backwards")
   {
-    _stopped = false;
+    _carIsMoving = true;
     Serial.println("Kjører bakover");
     digitalWrite(BACKWARD_PIN, LOW);
     digitalWrite(FORWARD_PIN, HIGH);
-    digitalWrite(TURNLEFT_PIN, HIGH);
-    digitalWrite(TURNRIGHT_PIN, HIGH);
-  }
-  else if (msgString == "Forwards+Left")
-  {
-    _stopped = false;
-    Serial.println("Kjørerer til venstre");
-    digitalWrite(TURNLEFT_PIN, LOW);
-    digitalWrite(FORWARD_PIN, LOW);
-    digitalWrite(BACKWARD_PIN, HIGH);
-    digitalWrite(TURNRIGHT_PIN, HIGH);
-  }
-  else if (msgString == "Forwards+Right")
-  {
-    _stopped = false;
-    Serial.println("Kjørerer til høyre");
-    digitalWrite(TURNRIGHT_PIN, LOW);
-    digitalWrite(FORWARD_PIN, LOW);
-    digitalWrite(BACKWARD_PIN, HIGH);
-    digitalWrite(TURNLEFT_PIN, HIGH);
-  }
-  else if (msgString == "Backwards+Left")
-  {
-    _stopped = false;
-    Serial.println("Rygger til venstre");
-    digitalWrite(TURNLEFT_PIN, LOW);
-    digitalWrite(FORWARD_PIN, HIGH);
-    digitalWrite(BACKWARD_PIN, LOW);
-    digitalWrite(TURNRIGHT_PIN, HIGH);
-  }
-  else if (msgString == "Backwards+Right")
-  {
-    _stopped = false;
-    Serial.println("Rygger til høyre");
-    digitalWrite(TURNRIGHT_PIN, LOW);
-    digitalWrite(FORWARD_PIN, HIGH);
-    digitalWrite(BACKWARD_PIN, LOW);
-    digitalWrite(TURNLEFT_PIN, HIGH);
+    lastThrottleCommandTime = millis();
   }
   else if (msgString == "Left")
   {
+    _stearingIsMoving = true;
     Serial.println("Svinger til venstre");
     digitalWrite(TURNLEFT_PIN, LOW);
     digitalWrite(FORWARD_PIN, HIGH);
-    digitalWrite(BACKWARD_PIN, HIGH);
-    digitalWrite(TURNRIGHT_PIN, HIGH);
+    lastStearingCommandTime = millis();
+
   }
   else if (msgString == "Right")
   {
+    _stearingIsMoving = true;
     Serial.println("Svinger til høyre");
     digitalWrite(TURNRIGHT_PIN, LOW);
     digitalWrite(FORWARD_PIN, HIGH);
-    digitalWrite(BACKWARD_PIN, HIGH);
-    digitalWrite(TURNLEFT_PIN, HIGH);
+    lastStearingCommandTime = millis();
+
   }
   else if (msgString == "Ping")
   {
@@ -337,7 +310,7 @@ void setup()
   StopCar();
 
   // Initialiser tidspunktet for siste kommando og heartbeat
-  lastCommandTime = millis();
+  lastThrottleCommandTime = millis();
   lastHeartbeatTime = millis();
 }
 
@@ -358,11 +331,20 @@ void loop()
     PostBaseTelemetry();
   }
 
+    if (_stearingIsMoving && (now - lastStearingCommandTime > 50))
+  {
+    Serial.println("Stopper sving");
+    StopCarStearing();
+  }
+
+
   // Sjekk om det har gått mer enn 1 sekund siden siste kommando
-  if (!_stopped && (now - lastCommandTime > 1000))
+  if (_carIsMoving && (now - lastThrottleCommandTime > 500))
   {
     // Stopper bilen
-    Serial.println("Ingen kommando mottatt på 1 sekund, stopper bilen.");
+    Serial.println("Ingen kommando mottatt på 0.5 sekund, stopper bilen.");
     StopCar();
   }
+
+
 }
