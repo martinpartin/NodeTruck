@@ -21,7 +21,7 @@ NodeTruck is a project aimed at controlling and monitoring a kids Ride-on car vi
 
 ## Prerequisites
 - **Car**: You need a kids Ride-on car w/remote control (or something similar).
-- **MCU**: ESP8266 (WeMos) with appropriate sensors and motors.
+- **MCU**: ESP8266 (WeMos) or ESP32
 - **WebApp**: ASP.NET Core and .NET 5+.
 - **MQTT Server**: Set up an MQTT server, such as [HiveMQ](https://www.hivemq.com/), to enable communication between the web app and the MCU.
 
