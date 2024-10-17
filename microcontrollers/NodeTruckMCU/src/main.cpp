@@ -224,12 +224,13 @@ void callback(char *topic, byte *payload, unsigned int length)
   {
     Serial.println("Ping");
     PostBaseTelemetry();
-    Serial.println("!!!PostBaseTelemetry");
     PostWifiTelemetry();
-    Serial.println("!!!PostWifiTelemetry");
     PostEspTelemetry();
-    Serial.println("!!!PostEspTelemetry");
-
+  }
+  else if (msgString == "start_wifi_manager") {
+    Serial.println("Mottatt forespørsel om å starte WiFiManager.");
+    WiFiManager wifiManager;
+    wifiManager.startConfigPortal("WiFiManager");
   }
   else if (msgString == "Stop")
   {
